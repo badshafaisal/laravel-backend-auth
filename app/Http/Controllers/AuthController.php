@@ -12,29 +12,37 @@ class AuthController extends Controller
 {
     // ১. রেজিস্টার ফাংশন
     public function register(Request $request)
-    {
-        // ডাটা ভ্যালিডেশন
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed', // password_confirmation ফিল্ড থাকতে হবে ফ্রন্টএন্ডে
-        ]);
+{
+    // ডাটা ভ্যালিডেশন
+    $validated = $request->validate([
+        'first_name' => 'required|string|max:255',
+        'last_name' => 'required|string|max:255',
+        'email' => 'required|string|email|max:255|unique:users',
+        'password' => 'required|string|min:6|confirmed',
+    ]);
 
-        // ইউজার তৈরি করা
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
+    // full name create করা
+    $fullName = $validated['first_name'] . ' ' . $validated['last_name'];
 
-        // অটোমেটিক লগইন করিয়ে দেওয়া (অপশনাল, তবে ভালো UX এর জন্য)
-        Auth::login($user);
+    // ইউজার তৈরি করা
+    $user = User::create([
+        'first_name' => $validated['first_name'],
+        'last_name'  => $validated['last_name'],
+        'name'       => $fullName,                      // 👈 IMPORTANT FIX
+        'email'      => $validated['email'],
+        'password'   => Hash::make($validated['password']),
+        'role'       =>'user',
+    ]);
 
-        return response()->json([
-            'message' => 'User registered successfully',
-            'user' => $user
-        ], 201);
-    }
+    // অটোমেটিক লগইন
+    Auth::login($user);
+
+    return response()->json([
+        'message' => 'User registered successfully',
+        'user' => $user
+    ], 201);
+}
+
 
     // ২. লগইন ফাংশন (самое গুরুত্বপূর্ণ অংশ)
     public function login(Request $request)

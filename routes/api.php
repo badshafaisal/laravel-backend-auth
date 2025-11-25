@@ -5,19 +5,18 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 
-// পাবলিক রাউট (লগইন ছাড়াই এক্সেস করা যাবে)
+// Public routes (no login required)
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// প্রোটেক্টেড রাউট (লগইন করা থাকলেই কেবল কাজ করবে)
-// middleware('auth:sanctum') চেক করে কুকি ঠিক আছে কিনা
-Route::middleware(['auth:sanctum'])->group(function () {
-    
+// Sanctum protected routes
+Route::middleware('auth:sanctum')->group(function () {
+
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
 
-    Route::get('User/Userlist',[UserController::class,'UserList']);
+    Route::apiResource('/users', UserController::class);
 
     Route::post('/logout', [AuthController::class, 'logout']);
 });
